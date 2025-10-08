@@ -69,6 +69,6 @@ key-name          = "terraform"
 user              = "ubuntu"
 connection_type   = "ssh"
 private_key       = "C:/Users/Vinay/Downloads/terraform.pem"
-src               = "./prod/install.sh"
+src               = "../prod/install.sh"
 destination       = "/home/ubuntu/install.sh"
 commands          = ["chmod +x /home/ubuntu/install.sh", "sudo bash /home/ubuntu/install.sh"]

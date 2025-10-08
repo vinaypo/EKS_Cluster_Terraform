@@ -13,6 +13,6 @@ data "aws_eks_cluster_auth" "eks_cluster_auth" {
 data "aws_vpc" "vpc" {
   filter {
     name   = "tag:Name"
-    values = [var.vpc-name]
+    values = ["${local.env}-${var.vpc-name}"]
   }
 }
