@@ -28,6 +28,10 @@ variable "cluster-name" {
 }
 variable "eks-sg-name" {}
 variable "ec2-sg-name" {}
+variable "jenkins-ec2-sg-name" {}
+variable "ingress_value" {
+  # type = list(number)
+}
 
 # EC2 Instance (for bastion host)
 variable "ec2-instance-profile-name" {}
@@ -48,3 +52,9 @@ variable "private_key" {}
 variable "src" {}
 variable "destination" {}
 variable "commands" {}
+
+variable "jenkins-ec2-instance-type" {}
+variable "jenkins-ec2-name" {}
+variable "jenkins-ec2-role-name" {}
+variable "jenkins_install" {}
+variable "jenkins-ec2-instance-profile-name" {}

@@ -2,21 +2,23 @@ env        = "prod"
 aws-region = "us-east-1"
 
 # vpc
-cidr-block       = "192.168.0.0/16"
-vpc-name         = "eks-vpc"
-igw-name         = "eks-igw"
-pub-subnet-count = "3"
-pub-cidr-block   = ["192.168.1.0/24", "192.168.2.0/24", "192.168.3.0/24"]
-pub-sub-name     = "eks-public-subnet"
-pri-subnet-count = "3"
-pri-cidr-block   = ["192.168.4.0/24", "192.168.5.0/24", "192.168.6.0/24"]
-pri-sub-name     = "eks-private-subnet"
-public-rt-name   = "eks-public-rt"
-ngw-eip-name     = "eks-ngw-eip"
-ngw-name         = "eks-ngw"
-private-rt-name  = "eks-private-rt"
-eks-sg-name      = "eks-sg"
-ec2-sg-name      = "bastion-sg"
+cidr-block          = "192.168.0.0/16"
+vpc-name            = "eks-vpc"
+igw-name            = "eks-igw"
+pub-subnet-count    = "3"
+pub-cidr-block      = ["192.168.1.0/24", "192.168.2.0/24", "192.168.3.0/24"]
+pub-sub-name        = "eks-public-subnet"
+pri-subnet-count    = "3"
+pri-cidr-block      = ["192.168.4.0/24", "192.168.5.0/24", "192.168.6.0/24"]
+pri-sub-name        = "eks-private-subnet"
+public-rt-name      = "eks-public-rt"
+ngw-eip-name        = "eks-ngw-eip"
+ngw-name            = "eks-ngw"
+private-rt-name     = "eks-private-rt"
+eks-sg-name         = "eks-sg"
+ec2-sg-name         = "bastion-sg"
+jenkins-ec2-sg-name = "jenkins-server-sg"
+ingress_value       = [22, 8080, 9000, 9090, 80]
 
 # Eks
 cluster-name             = "eks-cluster"
@@ -65,10 +67,16 @@ ami-id = {
   "us-east-2" = "ami-0ca4d5db4872d0c28"
 }
 ec2-instance-type = "t2.micro"
-key-name          = "terraform"
+key-name          = "demo"
 user              = "ubuntu"
 connection_type   = "ssh"
-private_key       = "C:/Users/Vinay/Downloads/terraform.pem"
+private_key       = "C:/Users/Vinay/Downloads/demo.pem"
 src               = "../prod/install.sh"
 destination       = "/home/ubuntu/install.sh"
 commands          = ["chmod +x /home/ubuntu/install.sh", "sudo bash /home/ubuntu/install.sh"]
+
+jenkins-ec2-instance-type         = "t2.2xlarge"
+jenkins-ec2-name                  = "jenkins-ec2"
+jenkins-ec2-role-name             = "jenkins-ec2-role"
+jenkins_install                   = "../prod/jenkins-tools-install.sh"
+jenkins-ec2-instance-profile-name = "jenkins-ec2-instance-profile"

@@ -1,0 +1,11 @@
+variable "env" {}
+variable "ami-id" {}
+variable "region" {}
+variable "jenkins-ec2-instance-type" {}
+variable "public-subnet_id" {}
+variable "jenkins-ec2-sg-id" {}
+variable "key-name" {}
+variable "jenkins-ec2-name" {}
+variable "jenkins-ec2-role-name" {}
+variable "jenkins_install" {}
+variable "jenkins-ec2-instance-profile-name" {}

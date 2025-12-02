@@ -21,5 +21,6 @@ variable "ngw-name" {}
 variable "private-rt-name" {}
 variable "eks-sg-name" {}
 variable "ec2-sg-name" {}
-
-
+variable "jenkins-ec2-sg-name" {}
+variable "ingress_value" {
+}

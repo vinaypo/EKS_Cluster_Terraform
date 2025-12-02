@@ -141,10 +141,10 @@ resource "aws_security_group" "eks-sg" { # EKS Security Group
   vpc_id      = aws_vpc.vpc.id
 
   ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [aws_vpc.vpc.cidr_block, "0.0.0.0/0"]
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ec2-sg.id]
   }
   egress {
     from_port   = 0
@@ -180,6 +180,32 @@ resource "aws_security_group" "ec2-sg" {
 
   tags = {
     Name = var.ec2-sg-name
+    env  = var.env
+  }
+}
+resource "aws_security_group" "jenkins-ec2-sg" {
+  name        = var.jenkins-ec2-sg-name
+  description = "Allowing Jenkins, Sonarqube"
+  vpc_id      = aws_vpc.vpc.id
+
+  dynamic "ingress" {
+    for_each = var.ingress_value
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = var.jenkins-ec2-sg-name
     env  = var.env
   }
 }

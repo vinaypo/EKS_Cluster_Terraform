@@ -18,5 +18,5 @@ resource "helm_release" "metrics-server" {
     }
   ]
 
-  depends_on = [helm_release.aws_load_balancer_controller]
+  depends_on = [helm_release.argocd]
 }

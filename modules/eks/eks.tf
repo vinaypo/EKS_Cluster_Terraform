@@ -57,6 +57,7 @@ resource "aws_eks_node_group" "ondemand-node" {
   capacity_type  = "ON_DEMAND"
   labels = {
     type = "ondemand"
+
   }
   update_config {
     max_unavailable = 1
