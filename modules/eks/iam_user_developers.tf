@@ -24,7 +24,7 @@ resource "aws_iam_role" "developers_role" { # Create an IAM role for developers
       {
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root" # allow account users to assume, policy restricts further
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root" # The role being assumed must trust the user/principal.
         }
         Action = "sts:AssumeRole"
       }
@@ -65,11 +65,12 @@ resource "aws_iam_policy" "developers_assume_role_policy" { # Policy to allow de
       {
         Effect   = "Allow"
         Action   = "sts:AssumeRole"
-        Resource = "${aws_iam_role.developers_role.arn}"
+        Resource = "${aws_iam_role.developers_role.arn}" # The user/principal must be allowed to call sts:AssumeRole.
       }
     ]
   })
 }
+# Both sides must agree — the user must be allowed to assume, and the role must trust the user.
 
 resource "aws_iam_group_policy_attachment" "developers_group_attach" {
   group      = aws_iam_group.developers.name

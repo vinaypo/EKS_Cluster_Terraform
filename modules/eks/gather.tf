@@ -7,13 +7,13 @@ data "aws_iam_policy_document" "eks_oidc_assume_role_policy" {
     actions = ["sts:AssumeRoleWithWebIdentity"] # The sts:AssumeRoleWithWebIdentity action allows assuming an IAM role using an OIDC token instead of AWS credentials
     effect  = "Allow"
 
-    condition {
+    condition { # this part restricts which identity can assume it
       test     = "StringEquals"
       variable = "${replace(aws_iam_openid_connect_provider.eks-oidc.url, "https://", "")}:sub"
       values   = ["system:serviceaccount:default:aws-test"]
     }
 
-    principals {
+    principals { # This part is the role trusting the caller
       identifiers = [aws_iam_openid_connect_provider.eks-oidc.arn]
       type        = "Federated"
     }

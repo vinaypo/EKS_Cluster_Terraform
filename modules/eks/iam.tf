@@ -73,7 +73,7 @@ resource "aws_iam_role_policy_attachment" "AmazonEBS_CSI_Driver_Policy" { # this
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 
-resource "aws_iam_role" "eks_oidc" {                                                 #this is required because EKS cluster will be accessing other AWS services using IAM roles
+resource "aws_iam_role" "eks_oidc" {
   assume_role_policy = data.aws_iam_policy_document.eks_oidc_assume_role_policy.json # assume role policy from gather.tf file for assuming role using OIDC token
   name               = "eks-oidc"
 }
@@ -116,3 +116,23 @@ resource "aws_iam_role_policy_attachment" "eks-oidc-policy-attach" {
 
 # Flow → Pod gets OIDC token → AWS STS validates via provider & TLS → STS issues temp creds → Pod uses creds to access AWS services.
 
+# ---
+
+# Your pod is assuming an IAM Role through IRSA (IAM Roles for Service Accounts).
+# IRSA works by linking:
+
+# 1. A Kubernetes ServiceAccount
+
+# → annotated with an IAM role ARN.
+
+# 2. An OIDC token issued by Kubernetes
+
+# → passed to AWS STS.
+
+# 3. An IAM Role trust policy
+
+# → allowing that service account to assume the role.
+
+# 4. AWS STS returns temporary credentials
+
+# → used by the pod when calling AWS APIs.
