@@ -7,9 +7,11 @@ on:
         type: choice
         description: "Environment Workspace"
         options:
+          - dev
+          - stage
           - prod
         required: true
-        default: "prod"
+        default: "dev"
 
       action:
         type: choice
@@ -43,10 +45,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.9.3
+      # - name: Setup Terraform
+      #   uses: hashicorp/setup-terraform@v3
+      #   with:
+      #     terraform_version: 1.9.3
 
       - name: Terraform Init
         run: terraform init
@@ -76,4 +78,3 @@ jobs:
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
         run: terraform destroy -auto-approve -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
-
