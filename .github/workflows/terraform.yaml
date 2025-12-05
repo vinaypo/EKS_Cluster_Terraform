@@ -48,7 +48,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.9.3
+          terraform_version: 1.10.5
 
       - name: Terraform Init
         run: terraform init
@@ -89,5 +89,5 @@ jobs:
           -var "private_key=$(cat demo.pem)" \
           -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
 
-      - name: Cleanup Private Key 
+      - name: Cleanup Private Key
         run: rm -f demo.pem
