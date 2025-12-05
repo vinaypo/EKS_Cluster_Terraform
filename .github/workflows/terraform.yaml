@@ -88,3 +88,6 @@ jobs:
         run: terraform destroy -auto-approve \
           -var "private_key=$(cat demo.pem)" \
           -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
+
+      - name: Cleanup Private Key 
+        run: rm -f demo.pem
