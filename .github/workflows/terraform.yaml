@@ -73,21 +73,15 @@ jobs:
 
       - name: Terraform Plan
         if: ${{ github.event.inputs.action == 'plan' }}
-        run: terraform plan \
-          -var "private_key=$(cat demo.pem)" \
-          -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
+        run: terraform plan -var "private_key=$(cat demo.pem)" -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'apply' }}
-        run: terraform apply -auto-approve \
-          -var "private_key=$(cat demo.pem)" \
-          -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
+        run: terraform apply -auto-approve -var "private_key=$(cat demo.pem)" -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
-        run: terraform destroy -auto-approve \
-          -var "private_key=$(cat demo.pem)" \
-          -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
+        run: terraform destroy -auto-approve -var "private_key=$(cat demo.pem)" -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
 
       - name: Cleanup Private Key
         run: rm -f demo.pem
