@@ -2,7 +2,7 @@ resource "null_resource" "null_bastion" {
   connection {
     type        = var.connection_type
     user        = var.user
-    private_key = file(var.private_key)
+    private_key = var.private_key
     host        = aws_instance.bastion-server.public_ip
   }
   provisioner "file" {

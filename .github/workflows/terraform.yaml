@@ -48,7 +48,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.10.5
+          terraform_version: 1.9.3
 
       - name: Terraform Init
         run: terraform init
@@ -64,17 +64,27 @@ jobs:
             terraform workspace new "$ENV"
           fi
 
-      - name: Validate
+      - name: Terraform Validate
         run: terraform validate
+
+      - name: Set Private Key
+        run: echo "${{ secrets.TF_PRIVATE_KEY }}" > demo.pem && chmod 600 demo.pem
+        id: set_key
 
       - name: Terraform Plan
         if: ${{ github.event.inputs.action == 'plan' }}
-        run: terraform plan -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
+        run: terraform plan \
+          -var "private_key=$(cat demo.pem)" \
+          -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'apply' }}
-        run: terraform apply -auto-approve -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
+        run: terraform apply -auto-approve \
+          -var "private_key=$(cat demo.pem)" \
+          -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
-        run: terraform destroy -auto-approve -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
+        run: terraform destroy -auto-approve \
+          -var "private_key=$(cat demo.pem)" \
+          -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
