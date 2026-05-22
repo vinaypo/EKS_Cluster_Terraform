@@ -1,4 +1,3 @@
-
 resource "helm_release" "aws_load_balancer_controller" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
@@ -9,7 +8,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   set = [
     {
       name  = "clusterName"
-      value = "${local.env}-${var.cluster-name}"
+      value = module.eks.cluster-name
     },
     {
       name  = "serviceAccount.create"
@@ -28,5 +27,5 @@ resource "helm_release" "aws_load_balancer_controller" {
       value = data.aws_vpc.vpc.id
     }
   ]
-  depends_on = [kubernetes_service_account.lb-controller-sa]
+  depends_on = [aws_eks_pod_identity_association.lb-controller-association]
 }

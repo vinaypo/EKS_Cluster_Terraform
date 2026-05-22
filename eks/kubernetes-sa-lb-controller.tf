@@ -258,15 +258,13 @@ resource "aws_iam_role" "lb-controller-role" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action = "sts:AssumeRoleWithWebIdentity"
+        Action = [
+          "sts:AssumeRole",
+          "sts:TagSession"
+        ]
         Effect = "Allow"
         Principal = {
-          Federated = module.eks.oidc-arn
-        }
-        Condition = {
-          StringEquals = {
-            "${module.eks.oidc-url}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
-          }
+          Service = "pods.eks.amazonaws.com"
         }
       }
     ]
@@ -278,14 +276,9 @@ resource "aws_iam_role_policy_attachment" "lb-policy-attach-role" {
   policy_arn = aws_iam_policy.load_balancer_controller.arn
 }
 
-resource "kubernetes_service_account" "lb-controller-sa" {
-  metadata {
-    name      = "aws-load-balancer-controller"
-    namespace = "kube-system"
-
-    annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.lb-controller-role.arn
-    }
-  }
-  depends_on = [aws_iam_role_policy_attachment.lb-policy-attach-role]
+resource "aws_eks_pod_identity_association" "lb-controller-association" {
+  cluster_name    = module.eks.cluster-name
+  service_account = "aws-load-balancer-controller"
+  namespace       = "kube-system"
+  role_arn        = aws_iam_role.lb-controller-role.arn
 }

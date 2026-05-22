@@ -53,8 +53,8 @@ variable "src" {}
 variable "destination" {}
 variable "commands" {}
 
-variable "jenkins-ec2-instance-type" {}
-variable "jenkins-ec2-name" {}
-variable "jenkins-ec2-role-name" {}
-variable "jenkins_install" {}
-variable "jenkins-ec2-instance-profile-name" {}
+# variable "jenkins-ec2-instance-type" {}
+# variable "jenkins-ec2-name" {}
+# variable "jenkins-ec2-role-name" {}
+# variable "jenkins_install" {}
+# variable "jenkins-ec2-instance-profile-name" {}

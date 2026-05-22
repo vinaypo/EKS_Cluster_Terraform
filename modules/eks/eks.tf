@@ -31,7 +31,7 @@ resource "aws_iam_openid_connect_provider" "eks-oidc" { # Create OIDC provider f
 
 # Add-Ons for EKS Cluster
 resource "aws_eks_addon" "eks-addons" {
-  for_each      = { for idx, addon in var.addons : idx => addon }
+  for_each      = { for addon in var.addons : addon.name => addon }
   cluster_name  = aws_eks_cluster.eks[0].name
   addon_name    = each.value.name
   addon_version = each.value.version
@@ -57,7 +57,6 @@ resource "aws_eks_node_group" "ondemand-node" {
   capacity_type  = "ON_DEMAND"
   labels = {
     type = "ondemand"
-
   }
   update_config {
     max_unavailable = 1
@@ -67,6 +66,10 @@ resource "aws_eks_node_group" "ondemand-node" {
     env  = var.env
   }
   depends_on = [aws_eks_cluster.eks]
+  # allow external changes without terraform plan difference 
+  lifecycle {
+    ignore_changes = [scaling_config[0].desired_size]
+  }
 }
 
 #Node Group for EKS Cluster--Spot Instances
@@ -95,4 +98,8 @@ resource "aws_eks_node_group" "spot-node" {
     env  = var.env
   }
   depends_on = [aws_eks_cluster.eks]
+  # allow external changes without terraform plan difference 
+  lifecycle {
+    ignore_changes = [scaling_config[0].desired_size]
+  }
 }

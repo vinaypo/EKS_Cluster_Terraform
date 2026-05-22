@@ -1,4 +1,93 @@
-name: "EKS-Creation-Using-Terraform"
+# name: "EKS-Creation-Using-Terraform"
+
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       environment:
+#         type: choice
+#         description: "Environment Workspace"
+#         options:
+#           - dev
+#           - stage
+#           - prod
+#         required: true
+#         default: "dev"
+
+#       action:
+#         type: choice
+#         description: "Terraform Action"
+#         options:
+#           - plan
+#           - apply
+#           - destroy
+#         required: true
+#         default: "apply"
+
+# env:
+#   AWS_REGION: us-east-1
+#   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#   TF_PRIVATE_KEY: ${{ secrets.TF_PRIVATE_KEY }}
+
+# permissions:
+#   contents: read
+
+# jobs:
+#   terraform:
+#     runs-on: ubuntu-latest
+#     name: Terraform ${{ github.event.inputs.action }} (${{ github.event.inputs.environment }})
+
+#     defaults:
+#       run:
+#         working-directory: vpc-ec2
+#         shell: bash
+
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Setup Terraform
+#         uses: hashicorp/setup-terraform@v3
+#         with:
+#           terraform_version: 1.10.5
+
+#       - name: Terraform Init
+#         run: terraform init
+
+#       - name: Select/Create Workspace
+#         run: |
+#           ENV="${{ github.event.inputs.environment }}"
+#           terraform workspace list
+#           if terraform workspace select "$ENV"; then
+#             echo "Workspace $ENV selected."
+#           else
+#             echo "Creating workspace $ENV..."
+#             terraform workspace new "$ENV"
+#           fi
+
+#       - name: Terraform Validate
+#         run: terraform validate
+
+#       - name: Set Private Key
+#         run: echo "${{ secrets.TF_PRIVATE_KEY }}" > demo.pem && chmod 600 demo.pem
+#         id: set_key
+
+#       - name: Terraform Plan
+#         if: ${{ github.event.inputs.action == 'plan' }}
+#         run: terraform plan -var "private_key=$(cat demo.pem)" -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" --input=false
+
+#       - name: Terraform Apply
+#         if: ${{ github.event.inputs.action == 'apply' }}
+#         run: terraform apply -auto-approve -var "private_key=$(cat demo.pem)" -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" --input=false
+
+#       - name: Terraform Destroy
+#         if: ${{ github.event.inputs.action == 'destroy' }}
+#         run: terraform destroy -auto-approve -var "private_key=$(cat demo.pem)" -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" --input=false
+
+#       - name: Cleanup Private Key
+#         run: rm -f demo.pem
+
+name: "EKS-Full-Infrastructure-Creation"
 
 on:
   workflow_dispatch:
@@ -13,7 +102,7 @@ on:
         required: true
         default: "dev"
 
-      action:
+      terraform_action:
         type: choice
         description: "Terraform Action"
         options:
@@ -22,6 +111,16 @@ on:
           - destroy
         required: true
         default: "apply"
+
+      component:
+        type: choice
+        description: "Component to Deploy"
+        options:
+          - both
+          - vpc-ec2
+          - eks
+        required: true
+        default: "both"
 
 env:
   AWS_REGION: us-east-1
@@ -33,9 +132,10 @@ permissions:
   contents: read
 
 jobs:
-  terraform:
+  vpc-ec2:
+    if: ${{ github.event.inputs.component == 'both' || github.event.inputs.component == 'vpc-ec2' }}
     runs-on: ubuntu-latest
-    name: Terraform ${{ github.event.inputs.action }} (${{ github.event.inputs.environment }})
+    name: VPC-EC2 ${{ github.event.inputs.terraform_action }} (${{ github.event.inputs.environment }})
 
     defaults:
       run:
@@ -73,16 +173,161 @@ jobs:
         id: set_key
 
       - name: Terraform Plan
-        if: ${{ github.event.inputs.action == 'plan' }}
+        if: ${{ github.event.inputs.terraform_action == 'plan' }}
         run: terraform plan -var "private_key=$(cat demo.pem)" -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" --input=false
 
       - name: Terraform Apply
-        if: ${{ github.event.inputs.action == 'apply' }}
+        if: ${{ github.event.inputs.terraform_action == 'apply' }}
         run: terraform apply -auto-approve -var "private_key=$(cat demo.pem)" -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" --input=false
 
       - name: Terraform Destroy
-        if: ${{ github.event.inputs.action == 'destroy' }}
+        if: ${{ github.event.inputs.terraform_action == 'destroy' }}
         run: terraform destroy -auto-approve -var "private_key=$(cat demo.pem)" -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" --input=false
 
       - name: Cleanup Private Key
         run: rm -f demo.pem
+
+  eks:
+    needs: [vpc-ec2]
+    if: ${{ (github.event.inputs.component == 'both' || github.event.inputs.component == 'eks') && (github.event.inputs.terraform_action != 'destroy') }}
+    runs-on: ubuntu-latest
+    name: EKS ${{ github.event.inputs.terraform_action }} (${{ github.event.inputs.environment }})
+
+    defaults:
+      run:
+        working-directory: eks
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Select/Create Workspace
+        run: |
+          ENV="${{ github.event.inputs.environment }}"
+          terraform workspace list
+          if terraform workspace select "$ENV"; then
+            echo "Workspace $ENV selected."
+          else
+            echo "Creating workspace $ENV..."
+            terraform workspace new "$ENV"
+          fi
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        if: ${{ github.event.inputs.terraform_action == 'plan' }}
+        run: terraform plan -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" --input=false
+
+      - name: Terraform Apply
+        if: ${{ github.event.inputs.terraform_action == 'apply' }}
+        run: terraform apply -auto-approve -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" --input=false
+
+  eks-destroy:
+    needs: [vpc-ec2]
+    if: ${{ github.event.inputs.component == 'eks' && github.event.inputs.terraform_action == 'destroy' }}
+    runs-on: ubuntu-latest
+    name: EKS Destroy (${{ github.event.inputs.environment }})
+
+    defaults:
+      run:
+        working-directory: eks
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Select/Create Workspace
+        run: |
+          ENV="${{ github.event.inputs.environment }}"
+          terraform workspace list
+          if terraform workspace select "$ENV"; then
+            echo "Workspace $ENV selected."
+          else
+            echo "Creating workspace $ENV..."
+            terraform workspace new "$ENV"
+          fi
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" --input=false
+
+  full-destroy:
+    if: ${{ github.event.inputs.component == 'both' && github.event.inputs.terraform_action == 'destroy' }}
+    runs-on: ubuntu-latest
+    name: Full Infrastructure Destroy (${{ github.event.inputs.environment }})
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+
+      # Destroy EKS first
+      - name: Terraform Init EKS
+        run: terraform -chdir=eks/ init
+
+      - name: Select EKS Workspace
+        run: |
+          ENV="${{ github.event.inputs.environment }}"
+          cd eks
+          terraform workspace list
+          if terraform workspace select "$ENV"; then
+            echo "Workspace $ENV selected."
+          else
+            echo "Workspace $ENV not found, skipping..."
+            exit 0
+          fi
+
+      - name: Destroy EKS
+        run: terraform -chdir=eks/ destroy -auto-approve -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" --input=false
+        continue-on-error: true
+
+      # Then destroy VPC-EC2
+      - name: Terraform Init VPC-EC2
+        run: terraform -chdir=vpc-ec2/ init
+
+      - name: Select VPC-EC2 Workspace
+        run: |
+          ENV="${{ github.event.inputs.environment }}"
+          cd vpc-ec2
+          terraform workspace list
+          if terraform workspace select "$ENV"; then
+            echo "Workspace $ENV selected."
+          else
+            echo "Workspace $ENV not found, skipping..."
+            exit 0
+          fi
+
+      - name: Set Private Key for Destroy
+        run: echo "${{ secrets.TF_PRIVATE_KEY }}" > vpc-ec2/demo.pem && chmod 600 vpc-ec2/demo.pem
+
+      - name: Destroy VPC-EC2
+        run: terraform -chdir=vpc-ec2/ destroy -auto-approve -var "private_key=$(cat vpc-ec2/demo.pem)" -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" --input=false
+
+      - name: Cleanup Private Key
+        run: rm -f vpc-ec2/demo.pem

@@ -17,6 +17,6 @@ output "ec2_sg_id" {
 
 }
 
-output "jenkins-ec2_sg_id" {
-  value = aws_security_group.jenkins-ec2-sg.id
-}
+# output "jenkins-ec2_sg_id" {
+#   value = aws_security_group.jenkins-ec2-sg.id
+# }

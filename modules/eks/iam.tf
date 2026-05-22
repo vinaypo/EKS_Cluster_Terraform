@@ -67,19 +67,50 @@ resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonEBS_CSI_Driver_Policy" { # this policy is required for EKS Node Group to manage the Amazon EBS CSI Driver
-  count      = var.is_eks_node_role_enabled ? 1 : 0
-  role       = aws_iam_role.eks-nodegroupe-role[count.index].name
+resource "aws_iam_role" "ebs-csi-role" {
+  name        = "${local.cluster-name}-ebs-csi-role-${random_integer.suffix.result}"
+  description = "EKS Service Account Role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "sts:AssumeRole",
+          "sts:TagSession"
+        ]
+        Effect = "Allow"
+        Principal = {
+          Service = "pods.eks.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ebs-csi-policy-attach-role" {
+  role       = aws_iam_role.ebs-csi-role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+
 }
 
-resource "aws_iam_role" "eks_oidc" {
+resource "aws_eks_pod_identity_association" "ebs-csi-association" {
+  cluster_name    = aws_eks_cluster.eks[0].name
+  service_account = "ebs-csi-controller-sa"
+  namespace       = "kube-system"
+  role_arn        = aws_iam_role.ebs-csi-role.arn
+  depends_on = [
+    aws_eks_addon.eks-addons["eks-pod-identity-agent"]
+  ]
+}
+
+resource "aws_iam_role" "s3-access-role" {
   assume_role_policy = data.aws_iam_policy_document.eks_oidc_assume_role_policy.json # assume role policy from gather.tf file for assuming role using OIDC token
-  name               = "eks-oidc"
+  name               = "${local.cluster-name}-s3-access-role-${random_integer.suffix.result}"
 }
 
-resource "aws_iam_policy" "eks-oidc-policy" {
-  name = "test-policy"
+resource "aws_iam_policy" "s3-access-policy" {
+  name = "s3-access-policy"
 
   policy = jsonencode({
     Statement = [{
@@ -95,9 +126,9 @@ resource "aws_iam_policy" "eks-oidc-policy" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "eks-oidc-policy-attach" {
-  role       = aws_iam_role.eks_oidc.name
-  policy_arn = aws_iam_policy.eks-oidc-policy.arn
+resource "aws_iam_role_policy_attachment" "s3-access-policy-attach" {
+  role       = aws_iam_role.s3-access-role.name
+  policy_arn = aws_iam_policy.s3-access-policy.arn
 }
 
 # OIDC Issuer → The EKS cluster URL that issues signed JWT tokens for service accounts.

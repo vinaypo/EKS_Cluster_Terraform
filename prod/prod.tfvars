@@ -25,7 +25,7 @@ cluster-name             = "eks-cluster"
 is_eks_role_enabled      = true
 is_eks_node_role_enabled = true
 is_eks_cluster_enabled   = true
-cluster-version          = "1.33"
+cluster-version          = "1.34"
 endpoint-private-access  = true
 endpoint-public-access   = false
 addons = [
@@ -39,11 +39,15 @@ addons = [
   },
   {
     name    = "kube-proxy"
-    version = "v1.33.0-eksbuild.2"
+    version = "v1.34.0-eksbuild.2"
+  },
+  {
+    name    = "eks-pod-identity-agent"
+    version = "v1.3.10-eksbuild.3"
   },
   {
     name    = "aws-ebs-csi-driver"
-    version = "v1.46.0-eksbuild.1"
+    version = "v1.60.0-eksbuild.1"
   }
 ]
 desired_capacity_ondemand = "1"
@@ -70,13 +74,13 @@ ec2-instance-type = "t2.micro"
 key-name          = "demo"
 user              = "ubuntu"
 connection_type   = "ssh"
-private_key       = "demo.pem"
+private_key       = "C:/Users/Vinay/Downloads/demo.pem"
 src               = "../prod/install.sh"
 destination       = "/home/ubuntu/install.sh"
 commands          = ["chmod +x /home/ubuntu/install.sh", "sudo bash /home/ubuntu/install.sh"]
 
-jenkins-ec2-instance-type         = "t2.2xlarge"
-jenkins-ec2-name                  = "jenkins-ec2"
-jenkins-ec2-role-name             = "jenkins-ec2-role"
-jenkins_install                   = "../prod/jenkins-tools-install.sh"
-jenkins-ec2-instance-profile-name = "jenkins-ec2-instance-profile"
+# jenkins-ec2-instance-type         = "t2.2xlarge"
+# jenkins-ec2-name                  = "jenkins-ec2"
+# jenkins-ec2-role-name             = "jenkins-ec2-role"
+# jenkins_install                   = "../prod/jenkins-tools-install.sh"
+# jenkins-ec2-instance-profile-name = "jenkins-ec2-instance-profile"
