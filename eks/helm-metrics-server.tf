@@ -1,5 +1,5 @@
 resource "helm_release" "metrics-server" {
-  name = "metrics-server"
+  name = "${local.env}-metrics-server"
 
   repository       = "https://kubernetes-sigs.github.io/metrics-server/"
   chart            = "metrics-server"

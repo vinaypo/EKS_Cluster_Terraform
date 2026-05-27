@@ -1,5 +1,5 @@
 resource "aws_iam_policy" "load_balancer_controller" {
-  name        = "AWSLoadBalancerControllerIAMPolicy"
+  name        = "${local.env}-${var.cluster-name}-AWSLoadBalancerControllerIAMPolicy"
   description = "Policy for AWS LoadBalancerController"
   policy = jsonencode({
     Version = "2012-10-17",
@@ -251,7 +251,7 @@ resource "aws_iam_policy" "load_balancer_controller" {
 }
 
 resource "aws_iam_role" "lb-controller-role" {
-  name        = "AmazonEKSLoadBalancerControllerRole"
+  name        = "${local.env}-${var.cluster-name}-AmazonEKSLoadBalancerControllerRole"
   description = "EKS Service Account Role"
 
   assume_role_policy = jsonencode({

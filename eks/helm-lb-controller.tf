@@ -1,5 +1,5 @@
 resource "helm_release" "aws_load_balancer_controller" {
-  name       = "aws-load-balancer-controller"
+  name       = "${local.env}-aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
   version    = "1.4.1"
@@ -25,6 +25,14 @@ resource "helm_release" "aws_load_balancer_controller" {
     {
       name  = "vpcId"
       value = data.aws_vpc.vpc.id
+    },
+    {
+      name  = "controllerConfig.featureGates.ALBGatewayAPI"
+      value = "true"
+    },
+    {
+      name  = "controllerConfig.featureGates.NLBGatewayAPI"
+      value = "true"
     }
   ]
   depends_on = [aws_eks_pod_identity_association.lb-controller-association]

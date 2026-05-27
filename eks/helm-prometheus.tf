@@ -1,5 +1,5 @@
 resource "helm_release" "prometheus-helm" {
-  name       = "prometheus"
+  name       = "${local.env}-prometheus"
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "kube-prometheus-stack"
   version    = "62.3.1"
