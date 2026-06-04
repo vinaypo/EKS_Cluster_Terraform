@@ -1,8 +1,10 @@
+# assoon as the alb is setup install gateway api from the folder gatewayapi.
+
 resource "helm_release" "aws_load_balancer_controller" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
-  version    = "1.4.1"
+  version    = "3.0.0"
   namespace  = "kube-system"
 
   set = [

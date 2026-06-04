@@ -40,3 +40,34 @@ sudo snap install helm --classic
 # install jq for parsing json in bash
 sudo apt-get install -y jq
 
+# Install GitHub Actions Runner
+
+cd /home/ubuntu
+mkdir -p actions-runner
+cd actions-runner
+
+
+curl -o actions-runner-linux-x64-2.334.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.334.0/actions-runner-linux-x64-2.334.0.tar.gz
+
+tar xzf ./actions-runner-linux-x64-2.334.0.tar.gz
+
+GH_PAT="${github_pat}"
+
+RUNNER_TOKEN=$(curl -s -X POST \
+  -H "Authorization: token $GH_PAT" \
+  -H "Accept: application/vnd.github+json" \
+  https://api.github.com/repos/vinaypo/EKS_Cluster_Terraform/actions/runners/registration-token \
+  | jq -r .token)
+
+./config.sh \
+  --url https://github.com/vinaypo/EKS_Cluster_Terraform \
+  --token "$RUNNER_TOKEN" \
+  --name $(hostname) \
+  --labels self-hosted,eks,bastion \
+  --unattended \
+  --replace
+
+./svc.sh install ubuntu
+./svc.sh start
+
+./svc.sh status

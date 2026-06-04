@@ -14,7 +14,7 @@ resource "aws_iam_role" "eks-admin" {
   })
 }
 
-resource "aws_iam_policy" "eks-admine-policy" {
+resource "aws_iam_policy" "eks-admin-policy" {
   name = "${local.cluster-name}-AmazonEKSAdminPolicy-${random_integer.suffix.result}"
 
   policy = jsonencode({
@@ -45,7 +45,7 @@ resource "aws_iam_policy" "eks-admine-policy" {
 
 resource "aws_iam_role_policy_attachment" "eks-admin-policy_attachment" {
   role       = aws_iam_role.eks-admin.name
-  policy_arn = aws_iam_policy.eks-admine-policy.arn
+  policy_arn = aws_iam_policy.eks-admin-policy.arn
 }
 
 resource "aws_iam_policy" "eksadmin-assume_role_policy" {

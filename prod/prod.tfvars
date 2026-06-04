@@ -45,10 +45,6 @@ addons = [
     name    = "eks-pod-identity-agent"
     version = "v1.3.10-eksbuild.3"
   },
-  {
-    name    = "aws-ebs-csi-driver"
-    version = "v1.60.0-eksbuild.1"
-  }
 ]
 desired_capacity_ondemand = "1"
 desired_capacity_spot     = "1"
@@ -73,11 +69,7 @@ ami-id = {
 ec2-instance-type = "t2.micro"
 key-name          = "demo"
 user              = "ubuntu"
-connection_type   = "ssh"
-private_key       = "C:/Users/Vinay/Downloads/demo.pem"
-src               = "../prod/install.sh"
-destination       = "/home/ubuntu/install.sh"
-commands          = ["chmod +x /home/ubuntu/install.sh", "sudo bash /home/ubuntu/install.sh"]
+
 
 # jenkins-ec2-instance-type         = "t2.2xlarge"
 # jenkins-ec2-name                  = "jenkins-ec2"

@@ -16,7 +16,7 @@ resource "helm_release" "argocd" {
   #   }
   # ]
   values = [
-    file("${path.module}/values/argocd/argocd-values-9.4.0.yaml")
+    file("${path.module}/../values/argocd/argocd-values-9.4.0.yaml")
   ]
 
 

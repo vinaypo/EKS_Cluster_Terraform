@@ -46,12 +46,7 @@ variable "ami-id" {
 }
 variable "ec2-instance-type" {}
 variable "key-name" {}
-variable "user" {}
-variable "connection_type" {}
-variable "private_key" {}
-variable "src" {}
-variable "destination" {}
-variable "commands" {}
+# variable "github_pat" {}
 
 # variable "jenkins-ec2-instance-type" {}
 # variable "jenkins-ec2-name" {}

@@ -104,6 +104,17 @@ resource "aws_eks_pod_identity_association" "ebs-csi-association" {
   ]
 }
 
+resource "aws_eks_addon" "ebs_csi" {
+  cluster_name = aws_eks_cluster.eks[0].name
+
+  addon_name    = "aws-ebs-csi-driver"
+  addon_version = "v1.60.0-eksbuild.1"
+
+  depends_on = [
+    aws_eks_pod_identity_association.ebs-csi-association
+  ]
+}
+
 resource "aws_iam_role" "s3-access-role" {
   assume_role_policy = data.aws_iam_policy_document.eks_oidc_assume_role_policy.json # assume role policy from gather.tf file for assuming role using OIDC token
   name               = "${local.cluster-name}-s3-access-role-${random_integer.suffix.result}"

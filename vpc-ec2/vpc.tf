@@ -7,7 +7,7 @@ module "vpc" {
   env                 = var.env
   cidr-block          = var.cidr-block
   vpc-name            = "${local.env}-${var.vpc-name}"
-  igw-name            = var.igw-name
+  igw-name            = "${local.env}-${var.igw-name}"
   pub-subnet-count    = var.pub-subnet-count
   pub-cidr-block      = var.pub-cidr-block
   pub-sub-name        = "${local.env}-${var.pub-sub-name}"

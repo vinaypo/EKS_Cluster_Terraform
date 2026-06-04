@@ -1,31 +1,31 @@
-resource "helm_release" "prometheus-helm" {
-  name       = "prometheus"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "kube-prometheus-stack"
-  version    = "62.3.1"
-  namespace  = "monitoring"
+# resource "helm_release" "prometheus-helm" {
+#   name       = "monitoring"
+#   repository = "https://prometheus-community.github.io/helm-charts"
+#   chart      = "kube-prometheus-stack"
+#   version    = "81.6.3"
+#   namespace  = "monitoring"
 
-  timeout = 2000
+#   timeout = 2000
 
-  set = [{
-    name  = "podSecurityPolicy.enabled"
-    value = true
-    },
+#   # set = [{
+#   #   name  = "podSecurityPolicy.enabled"
+#   #   value = true
+#   #   },
 
-    {
-      name  = "server.persistentVolume.enabled"
-      value = true
-    },
+#   #   {
+#   #     name  = "server.persistentVolume.enabled"
+#   #     value = true
+#   #   },
 
-    {
-      name  = "grafana.service.type"
-      value = "LoadBalancer"
-    },
+#   #   {
+#   #     name  = "grafana.service.type"
+#   #     value = "LoadBalancer"
+#   #   },
 
-    {
-      name  = "prometheus.service.type"
-      value = "LoadBalancer"
-  }]
+#   #   {
+#   #     name  = "prometheus.service.type"
+#   #     value = "LoadBalancer"
+#   # }]
 
-  depends_on = [helm_release.metrics-server]
-}
+#   depends_on = [helm_release.metrics-server]
+# }

@@ -14,10 +14,6 @@ variable "ec2-instance-type" {}
 variable "key-name" {}
 variable "public-subnet_id" {}
 variable "ec2-sg-id" {}
-variable "user" {}
-variable "connection_type" {}
-variable "private_key" {}
-variable "src" {}
-variable "destination" {}
-variable "commands" {}
+# variable "github_pat" {}
+
 

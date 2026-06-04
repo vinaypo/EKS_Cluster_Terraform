@@ -1,0 +1,81 @@
+name: "Infra Bootstrap (VPC + Bastion + Runner)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [dev, stage, prod]
+        required: true
+        default: dev
+
+      action:
+        type: choice
+        options: [plan, apply, destroy]
+        required: true
+        default: plan
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  vpc:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: vpc-ec2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-terraform-role
+          aws-region: us-east-1
+
+      - name: verify AWS Credentials
+        run: aws sts get-caller-identity
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Workspace
+        run: |
+          terraform workspace select ${{ github.event.inputs.environment }} || \
+          terraform workspace new ${{ github.event.inputs.environment }}
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        if: ${{ github.event.inputs.action != 'destroy' }}
+        run: |
+          terraform plan \
+          -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" \
+          -var="github_pat=${{ secrets.GH_PAT }}"
+
+      - name: Terraform Apply
+        if: ${{ github.event.inputs.action == 'apply' }}
+        run: |
+          terraform apply -auto-approve \
+          -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" \
+          -var="github_pat=${{ secrets.GH_PAT }}"
+
+      - name: Terraform Destroy Plan
+        if: ${{ github.event.inputs.action == 'destroy' }}
+        run: |
+          terraform plan -destroy \
+          -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars" \
+
+      - name: Terraform Destroy
+        if: ${{ github.event.inputs.action == 'destroy' }}
+        run: |
+          terraform destroy -auto-approve \
+          -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"

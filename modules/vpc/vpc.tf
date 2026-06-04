@@ -2,6 +2,10 @@ data "aws_availability_zones" "az" {
   state = "available"
 }
 
+data "http" "my_ip" {
+  url = "https://checkip.amazonaws.com/"
+}
+
 locals {
   cluster-name = var.cluster-name
 }
@@ -137,7 +141,7 @@ resource "aws_route_table_association" "pri-rt-ass" {
 
 resource "aws_security_group" "eks-sg" { # EKS Security Group
   name        = var.eks-sg-name
-  description = "EKS Security Group"
+  description = "Allow 443 from the JumpServer"
   vpc_id      = aws_vpc.vpc.id
 
   ingress {
@@ -160,7 +164,7 @@ resource "aws_security_group" "eks-sg" { # EKS Security Group
 
 resource "aws_security_group" "ec2-sg" {
   name        = var.ec2-sg-name
-  description = "Allow 443 from Jump Server only"
+  description = "Allow SSH from my IP only"
 
   vpc_id = aws_vpc.vpc.id
 
@@ -168,7 +172,7 @@ resource "aws_security_group" "ec2-sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] // It should be specific IP range
+    cidr_blocks = ["${chomp(data.http.my_ip.response_body)}/32"] // It should be specific IP range
   }
 
   egress {

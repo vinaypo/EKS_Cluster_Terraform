@@ -1,0 +1,10 @@
+apiVersion: gateway.k8s.aws/v1beta1
+kind: TargetGroupConfiguration
+metadata:
+  name: grafana-tg-config
+  namespace: monitoring
+spec:
+  targetReference:
+    name: monitoring-grafana
+  defaultConfiguration:
+    targetType: ip
