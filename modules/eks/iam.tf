@@ -91,7 +91,6 @@ resource "aws_iam_role" "ebs-csi-role" {
 resource "aws_iam_role_policy_attachment" "ebs-csi-policy-attach-role" {
   role       = aws_iam_role.ebs-csi-role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-
 }
 
 resource "aws_eks_pod_identity_association" "ebs-csi-association" {

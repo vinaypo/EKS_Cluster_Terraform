@@ -62,6 +62,21 @@ jobs:
                   terraform apply -auto-approve \
                   -var-file="../${{ github.event.inputs.environment }}/${{ github.event.inputs.environment }}.tfvars"
 
+            - name: Configure kubectl access to EKS cluster
+              if: ${{ github.event.inputs.action == 'apply' }}
+              run: |
+                  aws eks update-kubeconfig --region us-east-1 --name ${{ github.event.inputs.environment }}-eks-cluster
+
+            - name: Wait for AWS Load Balancer Controller
+              if: ${{ github.event.inputs.action == 'apply' }}
+              run: |
+                  kubectl rollout status deployment/aws-load-balancer-controller -n kube-system --timeout=5m
+
+            - name: Execute Gateway API Setup
+              if: ${{ github.event.inputs.action == 'apply' }}
+              working-directory: gatewayapi
+              run: bash gatewayapisteps.sh
+
             - name: Terraform Destroy Plan
               if: ${{ github.event.inputs.action == 'destroy' }}
               run: |
