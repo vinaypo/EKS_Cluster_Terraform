@@ -46,36 +46,34 @@ snap install helm --classic
 
 GH_PAT="${github_pat}"
 
+RUNNER_TOKEN=$(curl -s -X POST \
+  -H "Authorization: token $GH_PAT" \
+  -H "Accept: application/vnd.github+json" \
+  https://api.github.com/repos/vinaypo/EKS_Cluster_Terraform/actions/runners/registration-token \
+  | jq -r .token)
+
 mkdir -p /home/ubuntu/actions-runner
 chown -R ubuntu:ubuntu /home/ubuntu/actions-runner
 
 sudo -u ubuntu bash <<EOF
 cd /home/ubuntu/actions-runner
 
-curl -L \
--o actions-runner-linux-x64-2.334.0.tar.gz \
+curl -L -o actions-runner-linux-x64-2.334.0.tar.gz \
 https://github.com/actions/runner/releases/download/v2.334.0/actions-runner-linux-x64-2.334.0.tar.gz
 
 tar xzf actions-runner-linux-x64-2.334.0.tar.gz
 
-RUNNER_TOKEN=\$(curl -s -X POST \
-  -H "Authorization: token ${GH_PAT}" \
-  -H "Accept: application/vnd.github+json" \
-  https://api.github.com/repos/vinaypo/EKS_Cluster_Terraform/actions/runners/registration-token \
-  | jq -r .token)
-
 ./config.sh \
   --url https://github.com/vinaypo/EKS_Cluster_Terraform \
-  --token "\$RUNNER_TOKEN" \
-  --name "$(hostname)" \
+  --token "$RUNNER_TOKEN" \
+  --name "\$(hostname)" \
   --labels self-hosted,eks,bastion \
   --unattended \
   --replace
 EOF
 
 cd /home/ubuntu/actions-runner
-
-./svc.sh install ubuntu
-./svc.sh start
-./svc.sh status
+sudo ./svc.sh install ubuntu
+sudo ./svc.sh start
+sudo ./svc.sh status
 ```
