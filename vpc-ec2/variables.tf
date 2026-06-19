@@ -46,7 +46,7 @@ variable "ami-id" {
 }
 variable "ec2-instance-type" {}
 variable "key-name" {}
-# variable "github_pat" {}
+variable "github_pat" {}
 
 # variable "jenkins-ec2-instance-type" {}
 # variable "jenkins-ec2-name" {}

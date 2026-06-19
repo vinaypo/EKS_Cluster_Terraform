@@ -14,6 +14,6 @@ variable "ec2-instance-type" {}
 variable "key-name" {}
 variable "public-subnet_id" {}
 variable "ec2-sg-id" {}
-# variable "github_pat" {}
+variable "github_pat" {}
 
 

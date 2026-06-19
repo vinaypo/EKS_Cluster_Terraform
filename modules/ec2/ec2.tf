@@ -10,10 +10,10 @@ resource "aws_instance" "bastion-server" {
   root_block_device {
     volume_size = 30
   }
-  # user_data = file("${path.root}/../${var.env}/install.sh.tpl", {
-  #   github_pat = var.github_pat
-  # })
-  user_data = file("${path.root}/../${var.env}/install.sh")
+  user_data = file("${path.root}/../${var.env}/install.sh.tpl", {
+    github_pat = var.github_pat
+  })
+  # user_data = file("${path.root}/../${var.env}/install.sh")
   tags = {
     Name = var.ec2-name
     Env  = var.env

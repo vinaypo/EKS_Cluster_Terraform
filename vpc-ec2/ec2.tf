@@ -12,7 +12,7 @@ module "Ec2-Instance" {
   ec2-instance-profile-name = "${local.env}-${var.ec2-instance-profile-name}"
   ec2-role-name             = "${local.env}-${var.ec2-role-name}"
   ec2-policy-name           = "${local.env}-${var.ec2-policy-name}"
-  # github_pat                = var.github_pat
+  github_pat                = var.github_pat
 }
 
 # module "Jenkins-Ec2-Instance" {
