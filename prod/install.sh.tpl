@@ -1,55 +1,45 @@
 ```bash
 #!/bin/bash
-set -euxo pipefail
+set -e
+set -u
 
-exec > >(tee /var/log/user-data.log | logger -t user-data ) 2>&1
+#install aws cli
+sudo apt-get update -y
+sudo apt install unzip -y
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
 
-# ----------------------------
-# System updates + base tools
-# ----------------------------
-apt-get update -y
-apt-get install -y unzip jq gnupg software-properties-common curl
+#install kubectl
+sudo apt-get update -y
+curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.34.6/2026-04-08/bin/linux/amd64/kubectl
+sudo chmod +x ./kubectl
+sudo mv kubectl /usr/local/bin/
 
-# ----------------------------
-# AWS CLI
-# ----------------------------
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
-unzip -o awscliv2.zip
-./aws/install
+#install eksctl
+sudo apt-get update -y
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl  /usr/local/bin/
+eksctl version
 
-# ----------------------------
-# kubectl
-# ----------------------------
-curl -LO https://s3.us-west-2.amazonaws.com/amazon-eks/1.34.6/2026-04-08/bin/linux/amd64/kubectl
-chmod +x kubectl
-mv kubectl /usr/local/bin/
+# #install terraform
 
-# ----------------------------
-# eksctl
-# ----------------------------
-curl --silent --location \
-"https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$$(uname -s)_amd64.tar.gz" \
-| tar xz -C /tmp
+sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
+wget -O- https://apt.releases.hashicorp.com/gpg | \
+gpg --dearmor | \
+sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+gpg --no-default-keyring \
+--keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg \
+--fingerprint
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt update
+sudo apt-get install terraform -y
 
-mv /tmp/eksctl /usr/local/bin/
+# Intalling Helm
+sudo snap install helm --classic
 
-# ----------------------------
-# Terraform
-# ----------------------------
-wget -O- https://apt.releases.hashicorp.com/gpg \
-| gpg --dearmor \
-| tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
-
-echo "deb [arch=$$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $$(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" \
-| tee /etc/apt/sources.list.d/hashicorp.list
-
-apt-get update -y
-apt-get install -y terraform
-
-# ----------------------------
-# Helm
-# ----------------------------
-snap install helm --classic
+# install jq for parsing json in bash
+sudo apt-get install -y jq
 
 # ----------------------------
 # GitHub Actions Runner setup
