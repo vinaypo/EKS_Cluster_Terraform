@@ -13,6 +13,7 @@ aws iam create-open-id-connect-provider \
   --url https://$OIDC_PROVIDER \
   --client-id-list sts.amazonaws.com \
 
+# Create IAM ROle for GitHub Actions
 aws iam create-role \
   --role-name GitHubActionsEKSDeployRole \
   --assume-role-policy-document file://trust-policy.json
@@ -22,3 +23,6 @@ aws iam create-role \
 aws iam attach-role-policy \
   --role-name GitHubActionsEKSDeployRole \
   --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+
+
+
