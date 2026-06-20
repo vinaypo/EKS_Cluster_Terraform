@@ -66,9 +66,6 @@ resource "aws_iam_policy" "eksadmin-assume_role_policy" {
   })
 }
 
-resource "aws_iam_user" "manager" {
-  name = "manager"
-}
 
 resource "aws_iam_user_policy_attachment" "eks-admin-assumepolicy" {
   user       = aws_iam_user.manager.name
