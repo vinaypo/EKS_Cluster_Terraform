@@ -1,3 +1,7 @@
+resource "aws_iam_user" "manager" {
+  name = "manager"
+}
+
 resource "aws_iam_role" "eks-admin" {
   name = "${local.cluster-name}-admin-role-${random_integer.suffix.result}"
   assume_role_policy = jsonencode({
@@ -6,7 +10,7 @@ resource "aws_iam_role" "eks-admin" {
       {
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root" # allow account users to assume, policy restricts further
+          AWS = aws_iam_user.manager.arn # allow account users to assume, policy restricts further
         }
         Action = "sts:AssumeRole"
       }
