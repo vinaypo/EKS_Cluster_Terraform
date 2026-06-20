@@ -81,7 +81,11 @@ resource "aws_eks_access_entry" "developers-access" {
   cluster_name      = aws_eks_cluster.eks[0].name      # Reference the EKS cluster created in eks.tf
   principal_arn     = aws_iam_role.developers_role.arn # ARN of the IAM role to be mapped
   kubernetes_groups = ["my-viewers"]                   # Kubernetes group to map the IAM group to
+  depends_on = [
+    aws_eks_cluster.eks[0]
+  ]
 }
+
 
 # aws iam create-access-key --user-name developer1
 # aws configure --profile developer1
@@ -89,7 +93,7 @@ resource "aws_eks_access_entry" "developers-access" {
 #   --region us-east-1 \
 #   --name <cluster-name> \
 #   --role-arn <developers-role-arn> \
-#   -- alias dev1readonly \
+#   -- alias dev1-readonly \
 #   -- user-alias developer1 \
 #   --profile developer1
 # before running the above command, need to create the role and rolebinding in the cluster where the iam group is mapped to the kubernetes group

@@ -36,9 +36,8 @@ resource "aws_iam_user_policy_attachment" "cluster_admin_assume_role" {
 resource "aws_eks_access_entry" "cluster_admin" {
   cluster_name  = aws_eks_cluster.eks[0].name
   principal_arn = aws_iam_role.cluster_admin.arn
-
   depends_on = [
-    aws_iam_role_policy_attachment.cluster_admin
+    aws_eks_cluster.eks[0]
   ]
 }
 

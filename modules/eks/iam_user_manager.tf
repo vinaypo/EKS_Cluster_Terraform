@@ -43,14 +43,14 @@ resource "aws_eks_access_entry" "readonlyadmin-access" {
   principal_arn = aws_iam_role.eks-readonlyadmin.arn
   cluster_name  = aws_eks_cluster.eks[0].name
   depends_on = [
-    aws_iam_role_policy_attachment.eks-readonlyadmin-policy_attachment
+    aws_eks_cluster.eks[0]
   ]
 }
 
 
-resource "aws_eks_access_policy_association" "cluster_admin" {
+resource "aws_eks_access_policy_association" "readonlycluster_admin" {
   cluster_name  = aws_eks_cluster.eks[0].name
-  principal_arn = aws_iam_role.cluster_admin.arn
+  principal_arn = aws_iam_role.eks-readonlyadmin.arn
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy"
 
   access_scope {
@@ -58,7 +58,7 @@ resource "aws_eks_access_policy_association" "cluster_admin" {
   }
 
   depends_on = [
-    aws_eks_access_entry.admin-access
+    aws_eks_access_entry.readonlyadmin-access
   ]
 }
 
