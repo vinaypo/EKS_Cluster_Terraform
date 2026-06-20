@@ -5,12 +5,12 @@ resource "aws_iam_group" "developers" { # Create an IAM group named 'developers'
   path = "/users/"
 }
 
-resource "aws_iam_user" "user1" { # Create an IAM user 
-  name = "user-1"
+resource "aws_iam_user" "developer1" { # Create an IAM user 
+  name = "developer1"
 }
 
-resource "aws_iam_user_group_membership" "user1_group" { # Add the user to the developers group
-  user   = aws_iam_user.user1.name
+resource "aws_iam_user_group_membership" "developers_group" { # Add the user to the developers group
+  user   = aws_iam_user.developer1.name
   groups = [aws_iam_group.developers.name]
 }
 
@@ -83,16 +83,13 @@ resource "aws_eks_access_entry" "developers-access" {
   kubernetes_groups = ["my-viewers"]                   # Kubernetes group to map the IAM group to
 }
 
-# then create a iam security access key and secret key for the user and configure kubectl with those credentials to access the cluster
-# "aws configure --profile developers"
-# aws sts assume-role --role-arn <role_arn> --role-session-name developers-session --profile developers
-# next edit vim ~/.aws/config and add other profie like shown below
-# [profile developers]
-
-# [profile user-1]
-# role_arn=<iam role of developerrole>
-# source_profile=developers
-
-# "aws eks --region us-east-1 update-kubeconfig --name <cluster-name> --profile user-1"
-
+# aws iam create-access-key --user-name developer1
+# aws configure --profile developer1
+# aws eks update-kubeconfig \
+#   --region us-east-1 \
+#   --name <cluster-name> \
+#   --role-arn <developers-role-arn> \
+#   -- alias dev1readonly \
+#   -- user-alias developer1 \
+#   --profile developer1
 # before running the above command, need to create the role and rolebinding in the cluster where the iam group is mapped to the kubernetes group

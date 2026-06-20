@@ -1,5 +1,5 @@
 resource "aws_iam_role" "cluster_admin" {
-  name = "${local.cluster-name}-cluster-admin-role"
+  name = "${local.cluster-name}-admin-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -13,11 +13,6 @@ resource "aws_iam_role" "cluster_admin" {
       Action = "sts:AssumeRole"
     }]
   })
-}
-
-resource "aws_iam_role_policy_attachment" "cluster_admin" {
-  role       = aws_iam_role.cluster_admin.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
 resource "aws_iam_policy" "cluster_admin_assume_role" {
@@ -62,3 +57,12 @@ resource "aws_eks_access_policy_association" "cluster_admin" {
     aws_eks_access_entry.cluster_admin
   ]
 }
+
+# aws configure --profile User1
+# aws eks update-kubeconfig \
+#   --region us-east-1 \
+#   --name <cluster-name> \
+#   --role-arn <cluster-admin-role-arn> \
+#   -- alias admin \
+#   -- user-alias eks-admin
+#   --profile User1
