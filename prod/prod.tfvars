@@ -51,7 +51,7 @@ desired_capacity_spot     = "1"
 max_size_ondemand         = "3"
 max_size_spot             = "5"
 min_size_ondemand         = "1"
-min_size_spot             = "1"
+min_size_spot             = "2"
 ondemand_instance_types   = ["t3.medium"]
 spot_instance_types       = ["c5a.large", "c5a.xlarge", "m5a.large", "m5a.xlarge", "c5.large", "m5.large", "t3a.large", "t3a.xlarge", "t3a.medium"]
 
