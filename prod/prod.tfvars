@@ -47,7 +47,7 @@ addons = [
   },
 ]
 desired_capacity_ondemand = "1"
-desired_capacity_spot     = "1"
+desired_capacity_spot     = "2"
 max_size_ondemand         = "3"
 max_size_spot             = "5"
 min_size_ondemand         = "1"
