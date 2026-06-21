@@ -58,10 +58,8 @@ resource "aws_eks_access_policy_association" "cluster_admin" {
 }
 
 # aws configure --profile User1
-# aws eks update-kubeconfig \
-#   --region us-east-1 \
-#   --name <cluster-name> \
-#   --role-arn <cluster-admin-role-arn> \
-#   -- alias admin \
-#   -- user-alias eks-admin
+# # aws sts assume-role \
+#   --role-arn arn:aws:iam::741448944841:role/prod-eks-cluster-admin-role \
+#   --role-session-name test \
 #   --profile User1
+# aws eks update-kubeconfig --region us-east-1 --name <cluster-name> --role-arn <cluster-admin-role-arn> --alias admin --user-alias eks-admin --profile User1

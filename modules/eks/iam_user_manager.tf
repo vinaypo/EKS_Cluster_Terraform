@@ -18,6 +18,27 @@ resource "aws_iam_role" "eks-readonlyadmin" {
   })
 }
 
+resource "aws_iam_policy" "manager_describe_cluster" {
+  name = "${local.cluster-name}-describe-cluster-${random_integer.suffix.result}"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+
+      Action = [
+        "eks:DescribeCluster"
+      ]
+
+      Resource = aws_eks_cluster.eks[0].arn
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "manager_describe_cluster" {
+  role       = aws_iam_role.eks-readonlyadmin.name
+  policy_arn = aws_iam_policy.manager_describe_cluster.arn
+}
 
 resource "aws_iam_policy" "eks-readonlyadmin-assume_role_policy" {
   name = "${local.cluster-name}-AdminAssumeEKSRolePolicy-${random_integer.suffix.result}"
@@ -38,6 +59,8 @@ resource "aws_iam_user_policy_attachment" "eks-readonlyadmin-assumepolicy" {
   user       = aws_iam_user.manager.name
   policy_arn = aws_iam_policy.eks-readonlyadmin-assume_role_policy.arn
 }
+
+
 
 resource "aws_eks_access_entry" "readonlyadmin-access" {
   principal_arn = aws_iam_role.eks-readonlyadmin.arn
@@ -63,15 +86,22 @@ resource "aws_eks_access_policy_association" "readonlycluster_admin" {
 }
 
 
-# then create a iam security access key and secret key for the user and configure kubectl with those credentials to access the cluster
-# aws iam create-access-key --user-name manager
-# "aws configure --profile manager"
-# aws sts assume-role --role-arn <role_arn> --role-session-name eks-admin-session --profile manager
-# aws eks update-kubeconfig \
+# aws configure --profile manager-base
+# edit ~/.aws/config and add other profile like shown below
+
+# [profile manager]
+# role_arn = arn:aws:iam::741448944841:role/prod-eks-cluster-readonlyadmin-role-1646
+# source_profile = manager-base
+# region = us-east-1
+
+# aws sts get-caller-identity --profile manager
+
+
+# # aws eks update-kubeconfig \
 #   --region us-east-1 \
-#   --name <cluster-name> \
-#   --role-arn <readonly-role-arn> \
-#   -- alias readonly \
-#   -- user-alias eks-readonly
+#   --name prod-eks-cluster \
+#   --alias manager-readonly \
+#   --user-alias manager \
 #   --profile manager
+
 

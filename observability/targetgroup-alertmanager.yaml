@@ -1,0 +1,10 @@
+apiVersion: gateway.k8s.aws/v1beta1
+kind: TargetGroupConfiguration
+metadata:
+  name: alertmanager-tg-config
+  namespace: monitoring
+spec:
+  targetReference:
+    name: monitoring-kube-prometheus-alertmanager
+  defaultConfiguration:
+    targetType: ip

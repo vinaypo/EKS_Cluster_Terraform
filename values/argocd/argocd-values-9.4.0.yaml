@@ -2629,6 +2629,9 @@ server:
       - name: app-alb-gateway
         namespace: default
         sectionName: https
+      - name: app-alb-gateway
+        namespace: default
+        sectionName: http
     # -- List of hostnames for the HTTPRoute
     # @default -- `[]` (See [values.yaml])
     hostnames:

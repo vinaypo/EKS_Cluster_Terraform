@@ -86,14 +86,24 @@ resource "aws_eks_access_entry" "developers-access" {
   ]
 }
 
+# first create role and rolebinding from other user which has full cluster permissions like admin or cluster admin.
+# in the rolebinding use the group name "my-viewers" which is mapped to the IAM role in the above resource.
 
-# aws iam create-access-key --user-name developer1
-# aws configure --profile developer1
-# aws eks update-kubeconfig \
+# aws configure --profile developer1-base
+# edit ~/.aws/config and add other profile like shown below
+
+# [profile developer1]
+# role_arn = arn:aws:iam::741448944841:role/prod-eks-cluster-developers-role-1646
+# source_profile = developer1-base
+# region = us-east-1
+
+# aws sts get-caller-identity --profile developer1
+
+
+# # aws eks update-kubeconfig \
 #   --region us-east-1 \
-#   --name <cluster-name> \
-#   --role-arn <developers-role-arn> \
-#   -- alias dev1-readonly \
-#   -- user-alias developer1 \
+#   --name prod-eks-cluster \
+#   --alias dev1-readonly \
+#   --user-alias developer1 \
 #   --profile developer1
-# before running the above command, need to create the role and rolebinding in the cluster where the iam group is mapped to the kubernetes group
+
