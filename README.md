@@ -676,6 +676,8 @@ alertmanager:
             - alertmanager-slack-webhook
 ```
 
+In the `config` section add the receiver details, in our case its slack is the receiver.
+
 ```yaml
 config:
     global:
