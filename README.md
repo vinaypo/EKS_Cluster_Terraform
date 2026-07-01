@@ -147,12 +147,11 @@ EKS_Cluster_Terraform/
 │       └── kube-prom-stack-81.6.3.yaml
 │
 ├── prod/                       # Production environment scripts & variables
-│   ├── install.sh
-│   ├── install.sh.tpl          # Cloud-init template (injects github_pat)
-│   ├── jenkins-tools-install.sh
-│   └── prod.tfvars             # Production tfvars
-│
-└── project/                    # Project-level configurations
+    ├── install.sh
+    ├── install.sh.tpl          # Cloud-init template (injects github_pat)
+    ├── jenkins-tools-install.sh
+    └── prod.tfvars             # Production tfvars
+
 ```
 
 ---
@@ -259,6 +258,7 @@ aws iam attach-role-policy \
   --role-name GitHubActionsEKSDeployRole \
   --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
 ```
+> **Note:** In a real production setup, the GitHub Actions OIDC role should be scoped with least-privilege IAM policies instead of AdministratorAccess. The current configuration uses AdministratorAccess for simplicity in this personal project. In production, you would create a custom IAM policy that grants only the specific permissions needed.
 
 ---
 
@@ -459,7 +459,7 @@ SSH into the bastion host and configure cluster access:
 
 ```bash
 # SSH into bastion
-ssh -i your-key.pem ec2-user@<bastion-public-ip>
+ssh -i your-key.pem ubuntu@<bastion-public-ip>
 
 # Clone the repository inside the bastion
 git clone https://github.com/vinaypo/EKS_Cluster_Terraform.git
@@ -598,9 +598,13 @@ spec:
 
 ### 5. ArgoCD
 
-Deploy ArgoCD via Helm and expose it through the Gateway API.
+Deployed ArgoCD via Helm and exposed it through the Gateway API.
+Before exposing the argocd through Gateway API, the gateway CRD's has to be created in the cluster.
+
 
 ```bash
+# Create the HTTPRoute for ArgoCD (defined in values/argocd/argocd-values-9.4.0.yaml)
+# ExternalDNS will automatically create the Route 53 record
 # ArgoCD is installed via Terraform (helm-argocd.tf)
 # Apply the target group configuration for ArgoCD
 kubectl apply -f argocd/targetconfig.yaml
@@ -621,15 +625,14 @@ spec:
 ```
 
 ```bash
-# Create the HTTPRoute for ArgoCD (defined in values/argocd/argocd-values-9.4.0.yaml)
-# ExternalDNS will automatically create the Route 53 record
+
 
 # Get the ArgoCD admin password
 kubectl get secret -n argocd argocd-initial-admin-secret \
   -o jsonpath='{.data.password}' | base64 -d
 
-# Access ArgoCD at: https://argocd.yourdomain.com
 ```
+Access ArgoCD at: ```https://argocd.thedevopsnow.online ```
 
 ---
 
@@ -652,13 +655,78 @@ kubectl create secret generic alertmanager-slack-webhook \
   -n monitoring
 ```
 
-#### 6.3 Install kube-prometheus-stack
+#### 6.3 Get the kube-prometheus-stack values.yaml to make changes in file
 
 ```bash
 # Add Helm repo
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
+helm show values prometheus-community/kube-prometheus-stack --version <version> > values/observability/kube-prom-stack-<version>.yaml
+```
+
+#### 6.4 Add the slack details in the  alertmanager
+
+The `alertmanagerSpec` in the values file mounts the Slack webhook secret into the Alertmanager pod.
+
+```yaml
+alertmanager:
+  alertmanagerSpec:
+        secrets:
+            - alertmanager-slack-webhook
+```
+
+```yaml
+config:
+    global:
+      resolve_timeout: 5m
+    inhibit_rules:
+      - source_matchers:
+          - "severity = critical"
+        target_matchers:
+          - "severity =~ warning|info"
+        equal:
+          - "namespace"
+          - "alertname"
+      - source_matchers:
+          - "severity = warning"
+        target_matchers:
+          - "severity = info"
+        equal:
+          - "namespace"
+          - "alertname"
+      - source_matchers:
+          - "alertname = InfoInhibitor"
+        target_matchers:
+          - "severity = info"
+        equal:
+          - "namespace"
+      - target_matchers:
+          - "alertname = InfoInhibitor"
+    route:
+      group_by: ["namespace"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: "slack-notification"
+      routes:
+        - receiver: "slack-notification"
+          matchers:
+            - severity = "critical"
+    receivers:
+      - name: "slack-notification"
+        slack_configs:
+          - api_url_file: /etc/alertmanager/secrets/alertmanager-slack-webhook/slack-webhook-url
+            channel: "#alertmanager" ##should match the name of the slack channel
+            send_resolved: true
+    templates:
+      - "/etc/alertmanager/config/*.tmpl"
+```
+
+
+#### 6.5 Install kube-prometheus-stack
+
+```bash
 # Install with custom values
 cd values/observability/
 helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
@@ -667,9 +735,7 @@ helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
   --create-namespace
 ```
 
-The `alertmanagerSpec` in the values file mounts the Slack webhook secret into the Alertmanager pod.
-
-#### 6.4 Expose Grafana & Prometheus
+#### 6.6 Expose Grafana & Prometheus
 
 ```bash
 # Apply HTTPRoutes and TargetGroupConfigurations
@@ -763,15 +829,16 @@ spec:
     targetType: ip
 ```
 
-#### 6.5 Access Grafana
+#### 6.7 Access Grafana
 
 ```bash
 # Get Grafana admin password
 kubectl get secret -n monitoring kube-prometheus-stack-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 
-# Access at: https://grafana.yourdomain.com
 ```
+Access Prometheus at: ```https://prometheus.thedevopsnow.online ```
+Access Grafana at: ```https://prometheus.thedevopsnow.online ```
 
 ---
 
